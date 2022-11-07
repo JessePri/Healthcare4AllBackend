@@ -2,7 +2,7 @@
 
 namespace HealthCare4All.Classes.Users {
     public class HealthcareProvider : User {
-        private int userID = int.MinValue;
+
         public HealthcareProvider(
             string newUserName,
             Healthcare4AllDbContext newHealthcare4AllDbContext) : base(newUserName, newHealthcare4AllDbContext) {

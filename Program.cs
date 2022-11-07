@@ -1,6 +1,8 @@
 using HealthCare4All.Classes.Users;
 using HealthCare4All.Data;
 using HealthCare4All.Models;
+using Microsoft.AspNetCore.Mvc;
+using System.Net;
 //using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -22,7 +24,9 @@ if (app.Environment.IsDevelopment()) {
 app.UseHttpsRedirection();
 
 app.MapPost("/GetAppointments", (AuthToken token, Healthcare4AllDbContext newNealthcare4AllDbContext) => {
-    UserFactory.Create(token, newNealthcare4AllDbContext);
+    User user = UserFactory.Create(token, newNealthcare4AllDbContext);
+
+    return user.GetProfile();
 }); 
 
 
