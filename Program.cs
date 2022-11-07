@@ -23,11 +23,35 @@ if (app.Environment.IsDevelopment()) {
 
 app.UseHttpsRedirection();
 
-app.MapPost("/GetAppointments", (AuthToken token, Healthcare4AllDbContext newNealthcare4AllDbContext) => {
+app.MapPost("/GetProfile", (AuthToken token, Healthcare4AllDbContext newNealthcare4AllDbContext) => {
     User user = UserFactory.Create(token, newNealthcare4AllDbContext);
 
     return user.GetProfile();
-}); 
+});
+
+app.MapPost("/GetAppointments", (string? userName, AuthToken token, Healthcare4AllDbContext newNealthcare4AllDbContext) => {
+    User user = UserFactory.Create(token, newNealthcare4AllDbContext);
+
+    Patient patient;
+    HealthcareProvider provider;
+
+
+    if (user is Patient) {
+        patient = (Patient)user;
+
+        return patient.GetAppointments();
+    } else if (user is HealthcareProvider) {
+        provider = (HealthcareProvider)user;
+
+        if (userName == null) {
+            userName = "";
+        }
+
+        return provider.GetAppointments(userName);
+    } else {
+        return new Appointment[0];
+    }
+});
 
 
 
