@@ -1,5 +1,6 @@
 using HealthCare4All.Classes.Users;
 using HealthCare4All.Data;
+using HealthCare4All.Data.HTTP;
 using HealthCare4All.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
@@ -49,7 +50,7 @@ app.MapPost("/GetAppointments", (string? userName, AuthToken token, Healthcare4A
 
         return provider.GetAppointments(userName);
     } else {
-        return new Appointment[0];
+        return new ApiAppointment[0];
     }
 });
 

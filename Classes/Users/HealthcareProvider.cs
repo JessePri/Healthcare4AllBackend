@@ -1,4 +1,5 @@
 ﻿using HealthCare4All.Data;
+using HealthCare4All.Data.HTTP;
 
 namespace HealthCare4All.Classes.Users {
     public class HealthcareProvider : User {
@@ -9,13 +10,28 @@ namespace HealthCare4All.Classes.Users {
 
         }
 
-        public Appointment[] GetAppointments(string userName) {
+        public ApiAppointment[] GetAppointments(string userName) {
             var appointmentQuery = from Appointment in healthcare4AllDbContext.Appointments
-                                   join UserInfo in healthcare4AllDbContext.UserInfos on Appointment.PatientId equals UserInfo.UserId
-                                   where UserInfo.UserName == userName
-                                   select Appointment;
+                                   join UserInfoPatient in healthcare4AllDbContext.UserInfos on Appointment.PatientId equals UserInfoPatient.UserId
+                                   join UserInfoProvider in healthcare4AllDbContext.UserInfos on Appointment.PatientId equals UserInfoProvider.UserId
+                                   where (UserInfoPatient.UserName == userName && UserInfoProvider.UserId == UserId)
+                                   select new ApiAppointment {
+                                       AppointmentId = Appointment.AppointmentId,
+                                       ProviderUserName = UserInfoProvider.UserName,
+                                       ProviderFirstName = UserInfoProvider.FirstName,
+                                       ProviderLastName = UserInfoProvider.LastName,
+                                       PatientUserName = UserInfoPatient.UserName,
+                                       PatientFirstName = UserInfoPatient.FirstName,
+                                       PatientLastName = UserInfoPatient.LastName,
+                                       Time = Appointment.Time,
+                                       Street = Appointment.Street,
+                                       City = Appointment.City,
+                                       State = Appointment.State,
+                                       Postalcode = Appointment.Postalcode,
+                                       BulidingNumber = Appointment.BulidingNumber
+                                   };
 
-            Appointment[] appointments = appointmentQuery.ToArray();
+            ApiAppointment[] appointments = appointmentQuery.ToArray();
 
             return appointments;
         }
