@@ -50,7 +50,30 @@ app.MapPost("/GetAppointments", (string? userName, AuthToken token, Healthcare4A
 
         return provider.GetAppointments(userName);
     } else {
-        return new ApiAppointment[0];
+        return new List<ApiAppointment>();
+    }
+});
+
+app.MapPost("/GetAllTreatments", (string ? userName, AuthToken token, Healthcare4AllDbContext newNealthcare4AllDbContext) => {
+    User user = UserFactory.Create(token, newNealthcare4AllDbContext);
+
+    Patient patient;
+    HealthcareProvider provider;
+
+    if (user is Patient) {
+        patient = (Patient)user;
+
+        return patient.GetTreatments();
+    } else if (user is HealthcareProvider) {
+        provider = (HealthcareProvider)user;
+
+        if (userName == null) {
+            userName = "";
+        }
+
+        return new List<ApiTreatment>();
+    } else {
+        return new List<ApiTreatment>();
     }
 });
 

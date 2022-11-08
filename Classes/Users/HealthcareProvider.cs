@@ -10,7 +10,7 @@ namespace HealthCare4All.Classes.Users {
 
         }
 
-        public ApiAppointment[] GetAppointments(string userName) {
+        public List<ApiAppointment> GetAppointments(string userName) {
             var appointmentQuery = from Appointment in healthcare4AllDbContext.Appointments
                                    join UserInfoPatient in healthcare4AllDbContext.UserInfos on Appointment.PatientId equals UserInfoPatient.UserId
                                    join UserInfoProvider in healthcare4AllDbContext.UserInfos on Appointment.PatientId equals UserInfoProvider.UserId
@@ -31,7 +31,7 @@ namespace HealthCare4All.Classes.Users {
                                        BulidingNumber = Appointment.BulidingNumber
                                    };
 
-            ApiAppointment[] appointments = appointmentQuery.ToArray();
+            List<ApiAppointment> appointments = appointmentQuery.ToList();
 
             return appointments;
         }
