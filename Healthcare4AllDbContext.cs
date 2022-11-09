@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 
-namespace HealthCare4All.Data
+namespace HealthCare4All
 {
     public partial class Healthcare4AllDbContext : DbContext
     {
@@ -26,7 +26,7 @@ namespace HealthCare4All.Data
             if (!optionsBuilder.IsConfigured)
             {
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
-                optionsBuilder.UseSqlServer("Data Source=(LocalDB)\\MSSQLLocalDB;AttachDbFilename=\"C:\\Users\\Jesse\\Documents\\Healthcare4All DB.mdf\";Integrated Security=True;Connect Timeout=30");
+                optionsBuilder.UseSqlServer("Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=Healthcare4All;Integrated Security=True");
             }
         }
 
@@ -34,9 +34,7 @@ namespace HealthCare4All.Data
         {
             modelBuilder.Entity<Appointment>(entity =>
             {
-                entity.Property(e => e.AppointmentId)
-                    .ValueGeneratedNever()
-                    .HasColumnName("appointmentID");
+                entity.Property(e => e.AppointmentId).HasColumnName("appointmentID");
 
                 entity.Property(e => e.BulidingNumber)
                     .HasMaxLength(20)
@@ -65,18 +63,11 @@ namespace HealthCare4All.Data
                 entity.Property(e => e.Time)
                     .HasColumnType("datetime")
                     .HasColumnName("time");
-
-                entity.HasOne(d => d.Creator)
-                    .WithMany(p => p.Appointments)
-                    .HasForeignKey(d => d.CreatorId)
-                    .HasConstraintName("FK__Appointme__creat__160F4887");
             });
 
             modelBuilder.Entity<Treatment>(entity =>
             {
-                entity.Property(e => e.TreatmentId)
-                    .ValueGeneratedNever()
-                    .HasColumnName("treatmentID");
+                entity.Property(e => e.TreatmentId).HasColumnName("treatmentID");
 
                 entity.Property(e => e.Comments)
                     .HasColumnType("text")
@@ -91,15 +82,10 @@ namespace HealthCare4All.Data
                 entity.Property(e => e.IsPrescription).HasColumnName("isPrescription");
 
                 entity.Property(e => e.Name)
-                    .HasMaxLength(20)
+                    .HasMaxLength(30)
                     .HasColumnName("name");
 
                 entity.Property(e => e.PatientId).HasColumnName("patientID");
-
-                entity.HasOne(d => d.Creator)
-                    .WithMany(p => p.Treatments)
-                    .HasForeignKey(d => d.CreatorId)
-                    .HasConstraintName("FK__Treatment__creat__29221CFB");
             });
 
             modelBuilder.Entity<TreatmentTime>(entity =>
@@ -115,20 +101,18 @@ namespace HealthCare4All.Data
                 entity.HasOne(d => d.Treatment)
                     .WithMany()
                     .HasForeignKey(d => d.TreatmentId)
-                    .HasConstraintName("FK__Treatment__treat__3B40CD36");
+                    .HasConstraintName("FK__Treatment__treat__412EB0B6");
             });
 
             modelBuilder.Entity<UserInfo>(entity =>
             {
                 entity.HasKey(e => e.UserId)
-                    .HasName("PK__UserInfo__CB9A1CDF45E21EE7");
+                    .HasName("PK__UserInfo__CB9A1CDF4F14FC05");
 
-                entity.HasIndex(e => e.UserName, "UQ__UserInfo__66DCF95C799F5BDC")
+                entity.HasIndex(e => e.UserName, "UQ__UserInfo__66DCF95C688C7829")
                     .IsUnique();
 
-                entity.Property(e => e.UserId)
-                    .ValueGeneratedNever()
-                    .HasColumnName("userID");
+                entity.Property(e => e.UserId).HasColumnName("userID");
 
                 entity.Property(e => e.BirthDay)
                     .HasColumnType("date")
@@ -143,6 +127,10 @@ namespace HealthCare4All.Data
                     .HasColumnName("lastName");
 
                 entity.Property(e => e.MaxPriviledge).HasColumnName("maxPriviledge");
+
+                entity.Property(e => e.Password)
+                    .HasMaxLength(30)
+                    .HasColumnName("password");
 
                 entity.Property(e => e.UserName)
                     .HasMaxLength(30)

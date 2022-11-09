@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace HealthCare4All.Data
+namespace HealthCare4All
 {
     public partial class TreatmentTime
     {
         public int TreatmentId { get; set; }
-
         public DateTime Time { get; set; }
 
         public virtual Treatment Treatment { get; set; } = null!;

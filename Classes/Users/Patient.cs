@@ -85,6 +85,6 @@ namespace HealthCare4All.Classes.Users {
 
             return treatments;
         }
-        
+
     }
 }

@@ -6,7 +6,7 @@ namespace HealthCare4All.Classes.Users {
     public abstract class User {
         protected string UserName { get; set; } = "";
 
-        public int UserId {get; protected set; } = int.MinValue;
+        public int UserId { get; protected set; } = int.MinValue;
 
         protected readonly Healthcare4AllDbContext healthcare4AllDbContext;
 
@@ -15,7 +15,8 @@ namespace HealthCare4All.Classes.Users {
             healthcare4AllDbContext = newHealthcare4AllDbContext;
 
             var userIdListQuery = from UserInfo in healthcare4AllDbContext.UserInfos
-                                  where UserInfo.UserName == UserName select UserInfo.UserId;
+                                  where UserInfo.UserName == UserName
+                                  select UserInfo.UserId;
             int[] userIds = userIdListQuery.ToArray();
 
             if (userIds.Length == 1) {

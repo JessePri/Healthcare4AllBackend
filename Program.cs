@@ -1,3 +1,4 @@
+using HealthCare4All;
 using HealthCare4All.Classes.Users;
 using HealthCare4All.Data;
 using HealthCare4All.Data.HTTP;
@@ -24,14 +25,14 @@ if (app.Environment.IsDevelopment()) {
 
 app.UseHttpsRedirection();
 
-app.MapPost("/GetProfile", (AuthToken token, Healthcare4AllDbContext newNealthcare4AllDbContext) => {
-    User user = UserFactory.Create(token, newNealthcare4AllDbContext);
+app.MapPost("/GetProfile", (AuthToken token, Healthcare4AllDbContext newHealthcare4AllDbContext) => {
+    User user = UserFactory.Create(token, newHealthcare4AllDbContext);
 
     return user.GetProfile();
 });
 
-app.MapPost("/GetAppointments", (string? userName, AuthToken token, Healthcare4AllDbContext newNealthcare4AllDbContext) => {
-    User user = UserFactory.Create(token, newNealthcare4AllDbContext);
+app.MapPost("/GetAppointments", (string? userName, AuthToken token, Healthcare4AllDbContext newHealthcare4AllDbContext) => {
+    User user = UserFactory.Create(token, newHealthcare4AllDbContext);
 
     Patient patient;
     HealthcareProvider provider;
@@ -54,8 +55,8 @@ app.MapPost("/GetAppointments", (string? userName, AuthToken token, Healthcare4A
     }
 });
 
-app.MapPost("/GetAllTreatments", (string ? userName, AuthToken token, Healthcare4AllDbContext newNealthcare4AllDbContext) => {
-    User user = UserFactory.Create(token, newNealthcare4AllDbContext);
+app.MapPost("/GetAllTreatments", (string? userName, AuthToken token, Healthcare4AllDbContext newHealthcare4AllDbContext) => {
+    User user = UserFactory.Create(token, newHealthcare4AllDbContext);
 
     Patient patient;
     HealthcareProvider provider;
@@ -74,6 +75,17 @@ app.MapPost("/GetAllTreatments", (string ? userName, AuthToken token, Healthcare
         return new List<ApiTreatment>();
     } else {
         return new List<ApiTreatment>();
+    }
+});
+
+
+app.MapPost("/AddUser", (UserInfo newUserInfo, Healthcare4AllDbContext newHealthcare4AllDbContext) => {
+
+    try {
+        newHealthcare4AllDbContext.UserInfos.Add(newUserInfo);
+        newHealthcare4AllDbContext.SaveChanges();
+    } catch (Exception e) {
+
     }
 });
 
