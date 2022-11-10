@@ -43,6 +43,7 @@ namespace HealthCare4All.Classes.Users {
             } else {
                 return new ApiUserInfo();
             }
+        
         }
 
         public void EditProfile() { }

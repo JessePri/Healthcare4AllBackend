@@ -31,7 +31,7 @@ app.UseHttpsRedirection();
 app.MapPost("/GetProfile", (AuthToken token, Healthcare4AllDbContext newHealthcare4AllDbContext) => {
     User user = UserFactory.Create(token, newHealthcare4AllDbContext);
 
-    return user.GetProfile();
+    return Results.Ok(user.GetProfile());
 });
 
 app.MapPost("/GetAllAppointments", (string? userName, AuthToken token, Healthcare4AllDbContext newHealthcare4AllDbContext) => {
@@ -44,18 +44,18 @@ app.MapPost("/GetAllAppointments", (string? userName, AuthToken token, Healthcar
     if (user is Patient) {
         patient = (Patient)user;
 
-        return patient.GetAppointments();
+        return Results.Ok(patient.GetAppointments());
     } else if (user is HealthcareProvider) {
         provider = (HealthcareProvider)user;
 
         if (userName == null) {
-            Results.BadRequest();
-            return new List<ApiAppointment>();
+            return Results.BadRequest();
+            //return new List<ApiAppointment>();
         }
 
-        return provider.GetAppointments(userName);
+        return Results.Ok(provider.GetAppointments(userName));
     } else {
-        return new List<ApiAppointment>();
+        return Results.BadRequest();
     }
 });
 
@@ -91,18 +91,18 @@ app.MapPost("/GetAllTreatments", (string? userName, AuthToken token, Healthcare4
     if (user is Patient) {
         patient = (Patient)user;
 
-        return patient.GetTreatments();
+        return Results.Ok(patient.GetTreatments());
     } else if (user is HealthcareProvider) {
         provider = (HealthcareProvider)user;
 
         if (userName == null) {
-            Results.BadRequest();
-            return new List<ApiTreatment>();
+            return Results.BadRequest();
+           
         }
 
-        return provider.GetTreatments(userName);
+        return Results.Ok(provider.GetTreatments(userName));
     } else {
-        return new List<ApiTreatment>();    
+        return Results.BadRequest();   
     }
 });
 
@@ -134,8 +134,10 @@ app.MapPost("/AddUser", (UserInfo newUserInfo, Healthcare4AllDbContext newHealth
         newHealthcare4AllDbContext.UserInfos.Add(newUserInfo);
         newHealthcare4AllDbContext.SaveChanges();
     } catch (Exception e) {
-        Results.BadRequest();
+        return Results.BadRequest();
     }
+
+    return Results.Accepted();
 });
 
 
