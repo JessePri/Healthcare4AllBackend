@@ -1,4 +1,3 @@
-using HealthCare4All;
 using HealthCare4All.Classes.Users;
 using HealthCare4All.Data;
 using HealthCare4All.Data.HTTP;

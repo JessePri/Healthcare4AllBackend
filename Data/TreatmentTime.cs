@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace HealthCare4All
+namespace HealthCare4All.Data
 {
     public partial class TreatmentTime
     {

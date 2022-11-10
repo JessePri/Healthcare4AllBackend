@@ -1,7 +1,9 @@
 ﻿using HealthCare4All.Data;
 using HealthCare4All.Data.HTTP;
+using Microsoft.OpenApi.Models;
 
-namespace HealthCare4All.Classes.Users {
+namespace HealthCare4All.Classes.Users
+{
     public class HealthcareProvider : User {
 
         public HealthcareProvider(
@@ -47,7 +49,7 @@ namespace HealthCare4All.Classes.Users {
         public void AddAppointment(ApiAppointment apiAppointment) {
             List<int> patientUserIds = GetPatientUserIdListFromUserName(apiAppointment.PatientUserName);
 
-            if (patientUserIds.Count() == 1) {
+            if (patientUserIds.Count == 1) {
                 healthcare4AllDbContext.Appointments.Add(new Appointment {
                     AppointmentId = 0,
                     CreatorId = UserId,
@@ -68,7 +70,39 @@ namespace HealthCare4All.Classes.Users {
             }
         }
 
-        public void EditAppointment() { }
+        public void EditAppointment(ApiAppointment apiAppointment) {
+            Appointment? appointment = healthcare4AllDbContext.Appointments.Find(apiAppointment.AppointmentId);
+
+            List<int> patientUserIds = GetPatientUserIdListFromUserName(apiAppointment.PatientUserName);
+
+            if (appointment != null && patientUserIds.Count == 1) {
+                appointment.PatientId = patientUserIds[0];
+                appointment.Time = apiAppointment.Time;
+                appointment.Street = apiAppointment.Street;
+                appointment.City = apiAppointment.City;
+                appointment.State = apiAppointment.State;
+                appointment.Postalcode = apiAppointment.Postalcode;
+                appointment.BulidingNumber = apiAppointment.BulidingNumber;
+
+                try {
+                    healthcare4AllDbContext.SaveChanges();
+                } catch (Exception e) {
+
+                }
+            }
+        }
+
+        public void RemoveAppointment(ApiAppointment apiAppointment) {
+            Appointment appointment = new Appointment { AppointmentId = apiAppointment.AppointmentId };
+            healthcare4AllDbContext.Appointments.Attach(appointment);
+            healthcare4AllDbContext.Appointments.Remove(appointment);
+
+            try {
+                healthcare4AllDbContext.SaveChanges();
+            } catch (Exception e) {
+
+            }
+        }
         
         public List<ApiTreatment> GetTreatments(string userName) {
             var treatmentQuery = from Treatment in healthcare4AllDbContext.Treatments
@@ -134,7 +168,7 @@ namespace HealthCare4All.Classes.Users {
             List<int> patientUserIds = GetPatientUserIdListFromUserName(treatment.PatientUserName);
             Treatment dbTreatment;
 
-            if (patientUserIds.Count() == 1) {
+            if (patientUserIds.Count == 1) {
                 dbTreatment = new Treatment {
                     TreatmentId = 0,
                     CreatorId = UserId,
@@ -166,8 +200,68 @@ namespace HealthCare4All.Classes.Users {
             }
         }
 
-        public void RemoveTreatment() { }
+        public void EditTreatment(ApiTreatment apiTreatment) {
+            Treatment? treatment = healthcare4AllDbContext.Treatments.Find(apiTreatment.TreatmentId);
 
-        public void EditTreatment() { }
+            List<int> patientUserIds = GetPatientUserIdListFromUserName(apiTreatment.PatientUserName);
+            List<TreatmentTime> treatmentTimes;
+            List<TreatmentTime> newTreatmentTimes = new List<TreatmentTime>();
+
+            if (treatment != null && patientUserIds.Count == 1) {
+                treatment.PatientId = patientUserIds[0];
+                treatment.Name = apiTreatment.Name;
+                treatment.Dose = apiTreatment.Dose;
+                treatment.Comments = apiTreatment.Comments;
+                treatment.IsPrescription = apiTreatment.IsPrescription;
+
+                var treatmentTimeQuery = from TreatmentTime in healthcare4AllDbContext.TreatmentTimes
+                                         where TreatmentTime.TreatmentId == apiTreatment.TreatmentId
+                                         select TreatmentTime;
+
+                treatmentTimes = treatmentTimeQuery.ToList();
+                
+
+                healthcare4AllDbContext.TreatmentTimes.AttachRange(treatmentTimes);
+                healthcare4AllDbContext.TreatmentTimes.RemoveRange(treatmentTimes);
+
+                if (apiTreatment.Time != null) {
+                    foreach (DateTime time in apiTreatment.Time) {
+                        newTreatmentTimes.Add(new TreatmentTime {
+                            TreatmentId = apiTreatment.TreatmentId,
+                            Time = time
+                        });
+                    }
+                }
+
+                healthcare4AllDbContext.TreatmentTimes.AddRange(newTreatmentTimes);
+
+                try {
+                    healthcare4AllDbContext.SaveChanges();
+                } catch (Exception e) {
+
+                }
+            }
+        }
+
+        public void RemoveTreatment(ApiTreatment apiTreatment) {
+            var treatmentTimeQuery = from TreatmentTime in healthcare4AllDbContext.TreatmentTimes
+                                     where TreatmentTime.TreatmentId == apiTreatment.TreatmentId
+                                     select TreatmentTime;
+
+            List<TreatmentTime> treatmentTimes = treatmentTimeQuery.ToList();
+
+            healthcare4AllDbContext.TreatmentTimes.AttachRange(treatmentTimes);
+            healthcare4AllDbContext.TreatmentTimes.RemoveRange(treatmentTimes);
+
+            Treatment treatment = new Treatment { TreatmentId = apiTreatment.TreatmentId };
+            healthcare4AllDbContext.Treatments.Attach(treatment);
+            healthcare4AllDbContext.Treatments.Remove(treatment);
+
+            try {
+                healthcare4AllDbContext.SaveChanges();
+            } catch (Exception e) {
+
+            }
+        }
     }
 }

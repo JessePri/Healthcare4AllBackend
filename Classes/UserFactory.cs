@@ -1,7 +1,8 @@
 ﻿using HealthCare4All.Data;
 using HealthCare4All.Models;
 
-namespace HealthCare4All.Classes.Users {
+namespace HealthCare4All.Classes.Users
+{
     public class UserFactory {
         public static User Create(AuthToken token, Healthcare4AllDbContext newHealthcare4AllDbContext) {
             switch (token.Privilege) {

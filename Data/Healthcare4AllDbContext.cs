@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 
-namespace HealthCare4All
+namespace HealthCare4All.Data
 {
     public partial class Healthcare4AllDbContext : DbContext
     {

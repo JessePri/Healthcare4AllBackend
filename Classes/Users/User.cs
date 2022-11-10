@@ -2,7 +2,8 @@
 using HealthCare4All.Data.HTTP;
 using HealthCare4All.Models;
 
-namespace HealthCare4All.Classes.Users {
+namespace HealthCare4All.Classes.Users
+{
     public abstract class User {
         protected string UserName { get; set; } = "";
 
