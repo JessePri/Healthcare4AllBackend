@@ -54,6 +54,7 @@ namespace HealthCare4All.Classes.Users {
                                      IsPrescription = Treatment.IsPrescription,
                                      Time = TreatmentTimeNull.Time
                                  };
+
             var treatmentsFromQuery = treatmentQuery.ToArray();
             int prevTreatmentID = int.MinValue;
 
@@ -62,7 +63,7 @@ namespace HealthCare4All.Classes.Users {
             foreach (var treatmentFromQuery in treatmentsFromQuery) {
                 if (treatmentFromQuery.TreatmentId != prevTreatmentID) {
                     treatments.Add(new ApiTreatment {
-                        TreatmentID = treatmentFromQuery.TreatmentId,
+                        TreatmentId = treatmentFromQuery.TreatmentId,
                         ProviderUserName = treatmentFromQuery.ProviderUserName,
                         ProviderFirstName = treatmentFromQuery.ProviderFirstName,
                         ProviderLastName = treatmentFromQuery.ProviderLastName,

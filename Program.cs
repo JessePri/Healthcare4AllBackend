@@ -2,8 +2,11 @@ using HealthCare4All;
 using HealthCare4All.Classes.Users;
 using HealthCare4All.Data;
 using HealthCare4All.Data.HTTP;
+using HealthCare4All.Data.HTTP.ServerInput;
 using HealthCare4All.Models;
+using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
 using System.Net;
 //using Microsoft.AspNetCore.Mvc;
 
@@ -31,7 +34,7 @@ app.MapPost("/GetProfile", (AuthToken token, Healthcare4AllDbContext newHealthca
     return user.GetProfile();
 });
 
-app.MapPost("/GetAppointments", (string? userName, AuthToken token, Healthcare4AllDbContext newHealthcare4AllDbContext) => {
+app.MapPost("/GetAllAppointments", (string? userName, AuthToken token, Healthcare4AllDbContext newHealthcare4AllDbContext) => {
     User user = UserFactory.Create(token, newHealthcare4AllDbContext);
 
     Patient patient;
@@ -46,12 +49,36 @@ app.MapPost("/GetAppointments", (string? userName, AuthToken token, Healthcare4A
         provider = (HealthcareProvider)user;
 
         if (userName == null) {
-            userName = "";
+            Results.BadRequest();
+            return new List<ApiAppointment>();
         }
 
         return provider.GetAppointments(userName);
     } else {
         return new List<ApiAppointment>();
+    }
+});
+
+app.MapPost("/AddAppointment", (ApiAppointmentWithAuthToken apiAppointmentWithAuthToken, Healthcare4AllDbContext newHealthcare4AllDbContext) => {
+    //AuthToken token = new AuthToken();
+
+    User user = UserFactory.Create(apiAppointmentWithAuthToken.Token, newHealthcare4AllDbContext);
+
+    Patient patient;
+    HealthcareProvider provider;
+
+
+    if (user is Patient) {
+        patient = (Patient)user;
+
+        return Results.BadRequest();
+    } else if (user is HealthcareProvider) {
+        provider = (HealthcareProvider)user;
+        provider.AddAppointment(apiAppointmentWithAuthToken);
+
+        return Results.Accepted();
+    } else {
+        return Results.BadRequest();
     }
 });
 
@@ -69,12 +96,34 @@ app.MapPost("/GetAllTreatments", (string? userName, AuthToken token, Healthcare4
         provider = (HealthcareProvider)user;
 
         if (userName == null) {
-            userName = "";
+            Results.BadRequest();
+            return new List<ApiTreatment>();
         }
 
-        return new List<ApiTreatment>();
+        return provider.GetTreatments(userName);
     } else {
-        return new List<ApiTreatment>();
+        return new List<ApiTreatment>();    
+    }
+});
+
+app.MapPost("/AddTreatment", (ApiTreatmentWithAuthToken apiTreatmentWithAuthToken, Healthcare4AllDbContext newHealthcare4AllDbContext) => {
+    User user = UserFactory.Create(apiTreatmentWithAuthToken.Token, newHealthcare4AllDbContext);
+
+    Patient patient;
+    HealthcareProvider provider;
+
+
+    if (user is Patient) {
+        patient = (Patient)user;
+
+        return Results.BadRequest();
+    } else if (user is HealthcareProvider) {
+        provider = (HealthcareProvider)user;
+        provider.AddTreatment(apiTreatmentWithAuthToken);
+
+        return Results.Accepted();
+    } else {
+        return Results.BadRequest();
     }
 });
 
@@ -85,7 +134,7 @@ app.MapPost("/AddUser", (UserInfo newUserInfo, Healthcare4AllDbContext newHealth
         newHealthcare4AllDbContext.UserInfos.Add(newUserInfo);
         newHealthcare4AllDbContext.SaveChanges();
     } catch (Exception e) {
-
+        Results.BadRequest();
     }
 });
 
