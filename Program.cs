@@ -81,6 +81,52 @@ app.MapPost("/AddAppointment", (ApiAppointmentWithAuthToken apiAppointmentWithAu
     }
 });
 
+app.MapPost("/EditAppointment", (ApiAppointmentWithAuthToken apiAppointmentWithAuthToken, Healthcare4AllDbContext newHealthcare4AllDbContext) => {
+    //AuthToken token = new AuthToken();
+
+    User user = UserFactory.Create(apiAppointmentWithAuthToken.Token, newHealthcare4AllDbContext);
+
+    Patient patient;
+    HealthcareProvider provider;
+
+
+    if (user is Patient) {
+        patient = (Patient)user;
+
+        return Results.BadRequest();
+    } else if (user is HealthcareProvider) {
+        provider = (HealthcareProvider)user;
+        provider.EditAppointment(apiAppointmentWithAuthToken);
+
+        return Results.Accepted();
+    } else {
+        return Results.BadRequest();
+    }
+});
+
+app.MapPost("/RemoveAppointment", (ApiAppointmentWithAuthToken apiAppointmentWithAuthToken, Healthcare4AllDbContext newHealthcare4AllDbContext) => {
+    //AuthToken token = new AuthToken();
+
+    User user = UserFactory.Create(apiAppointmentWithAuthToken.Token, newHealthcare4AllDbContext);
+
+    Patient patient;
+    HealthcareProvider provider;
+
+
+    if (user is Patient) {
+        patient = (Patient)user;
+
+        return Results.BadRequest();
+    } else if (user is HealthcareProvider) {
+        provider = (HealthcareProvider)user;
+        provider.RemoveAppointment(apiAppointmentWithAuthToken);
+
+        return Results.Accepted();
+    } else {
+        return Results.BadRequest();
+    }
+});
+
 app.MapPost("/GetAllTreatments", (string? userName, AuthToken token, Healthcare4AllDbContext newHealthcare4AllDbContext) => {
     User user = UserFactory.Create(token, newHealthcare4AllDbContext);
 
@@ -119,6 +165,48 @@ app.MapPost("/AddTreatment", (ApiTreatmentWithAuthToken apiTreatmentWithAuthToke
     } else if (user is HealthcareProvider) {
         provider = (HealthcareProvider)user;
         provider.AddTreatment(apiTreatmentWithAuthToken);
+
+        return Results.Accepted();
+    } else {
+        return Results.BadRequest();
+    }
+});
+
+app.MapPost("/EditTreatment", (ApiTreatmentWithAuthToken apiTreatmentWithAuthToken, Healthcare4AllDbContext newHealthcare4AllDbContext) => {
+    User user = UserFactory.Create(apiTreatmentWithAuthToken.Token, newHealthcare4AllDbContext);
+
+    Patient patient;
+    HealthcareProvider provider;
+
+
+    if (user is Patient) {
+        patient = (Patient)user;
+
+        return Results.BadRequest();
+    } else if (user is HealthcareProvider) {
+        provider = (HealthcareProvider)user;
+        provider.EditTreatment(apiTreatmentWithAuthToken);
+
+        return Results.Accepted();
+    } else {
+        return Results.BadRequest();
+    }
+});
+
+app.MapPost("/RemoveTreatment", (ApiTreatmentWithAuthToken apiTreatmentWithAuthToken, Healthcare4AllDbContext newHealthcare4AllDbContext) => {
+    User user = UserFactory.Create(apiTreatmentWithAuthToken.Token, newHealthcare4AllDbContext);
+
+    Patient patient;
+    HealthcareProvider provider;
+
+
+    if (user is Patient) {
+        patient = (Patient)user;
+
+        return Results.BadRequest();
+    } else if (user is HealthcareProvider) {
+        provider = (HealthcareProvider)user;
+        provider.RemoveTreatment(apiTreatmentWithAuthToken);
 
         return Results.Accepted();
     } else {
