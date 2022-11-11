@@ -1,6 +1,7 @@
 ﻿using HealthCare4All.Data;
 using HealthCare4All.Data.HTTP;
 using Microsoft.OpenApi.Models;
+using System.Transactions;
 
 namespace HealthCare4All.Classes.Users
 {
@@ -23,7 +24,7 @@ namespace HealthCare4All.Classes.Users
         public List<ApiAppointment> GetAppointments(string userName) {
             var appointmentQuery = from Appointment in healthcare4AllDbContext.Appointments
                                    join UserInfoPatient in healthcare4AllDbContext.UserInfos on Appointment.PatientId equals UserInfoPatient.UserId
-                                   join UserInfoProvider in healthcare4AllDbContext.UserInfos on Appointment.PatientId equals UserInfoProvider.UserId
+                                   join UserInfoProvider in healthcare4AllDbContext.UserInfos on Appointment.CreatorId equals UserInfoProvider.UserId
                                    where (UserInfoPatient.UserName == userName && UserInfoProvider.UserId == UserId)
                                    select new ApiAppointment {
                                        AppointmentId = Appointment.AppointmentId,
@@ -75,7 +76,7 @@ namespace HealthCare4All.Classes.Users
 
             List<int> patientUserIds = GetPatientUserIdListFromUserName(apiAppointment.PatientUserName);
 
-            if (appointment != null && patientUserIds.Count == 1) {
+            if (appointment != null && appointment.CreatorId == UserId && patientUserIds.Count == 1) {
                 appointment.PatientId = patientUserIds[0];
                 appointment.Time = apiAppointment.Time;
                 appointment.Street = apiAppointment.Street;
@@ -93,8 +94,18 @@ namespace HealthCare4All.Classes.Users
         }
 
         public void RemoveAppointment(ApiAppointment apiAppointment) {
-            Appointment appointment = new Appointment { AppointmentId = apiAppointment.AppointmentId };
+            Appointment? appointment = healthcare4AllDbContext.Appointments.Find(apiAppointment.AppointmentId);
+
+            if (appointment == null || appointment.CreatorId != UserId) {
+                return;
+            }
+
             healthcare4AllDbContext.Appointments.Attach(appointment);
+
+            if (appointment.CreatorId != UserId) {
+                return;
+            }
+
             healthcare4AllDbContext.Appointments.Remove(appointment);
 
             try {
@@ -107,7 +118,7 @@ namespace HealthCare4All.Classes.Users
         public List<ApiTreatment> GetTreatments(string userName) {
             var treatmentQuery = from Treatment in healthcare4AllDbContext.Treatments
                                  join UserInfoPatient in healthcare4AllDbContext.UserInfos on Treatment.PatientId equals UserInfoPatient.UserId
-                                 join UserInfoProvider in healthcare4AllDbContext.UserInfos on Treatment.PatientId equals UserInfoProvider.UserId
+                                 join UserInfoProvider in healthcare4AllDbContext.UserInfos on Treatment.CreatorId equals UserInfoProvider.UserId
                                  join TreatmentTime in healthcare4AllDbContext.TreatmentTimes on Treatment.TreatmentId equals TreatmentTime.TreatmentId
                                  into TreatmentsWithAndWithoutTime
                                  from TreatmentTimeNull in TreatmentsWithAndWithoutTime.DefaultIfEmpty()
@@ -207,7 +218,7 @@ namespace HealthCare4All.Classes.Users
             List<TreatmentTime> treatmentTimes;
             List<TreatmentTime> newTreatmentTimes = new List<TreatmentTime>();
 
-            if (treatment != null && patientUserIds.Count == 1) {
+            if (treatment != null && treatment.CreatorId == UserId && patientUserIds.Count == 1) {
                 treatment.PatientId = patientUserIds[0];
                 treatment.Name = apiTreatment.Name;
                 treatment.Dose = apiTreatment.Dose;
@@ -244,6 +255,12 @@ namespace HealthCare4All.Classes.Users
         }
 
         public void RemoveTreatment(ApiTreatment apiTreatment) {
+            Treatment? treatment = healthcare4AllDbContext.Treatments.Find(apiTreatment.TreatmentId);
+
+            if (treatment == null || treatment.CreatorId != UserId) {
+                return;
+            }
+
             var treatmentTimeQuery = from TreatmentTime in healthcare4AllDbContext.TreatmentTimes
                                      where TreatmentTime.TreatmentId == apiTreatment.TreatmentId
                                      select TreatmentTime;
@@ -252,9 +269,6 @@ namespace HealthCare4All.Classes.Users
 
             healthcare4AllDbContext.TreatmentTimes.AttachRange(treatmentTimes);
             healthcare4AllDbContext.TreatmentTimes.RemoveRange(treatmentTimes);
-
-            Treatment treatment = new Treatment { TreatmentId = apiTreatment.TreatmentId };
-            healthcare4AllDbContext.Treatments.Attach(treatment);
             healthcare4AllDbContext.Treatments.Remove(treatment);
 
             try {

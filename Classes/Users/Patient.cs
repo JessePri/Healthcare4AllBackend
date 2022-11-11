@@ -13,7 +13,7 @@ namespace HealthCare4All.Classes.Users
         public List<ApiAppointment> GetAppointments() {
             var appointmentQuery = from Appointment in healthcare4AllDbContext.Appointments
                                    join UserInfoPatient in healthcare4AllDbContext.UserInfos on Appointment.PatientId equals UserInfoPatient.UserId
-                                   join UserInfoProvider in healthcare4AllDbContext.UserInfos on Appointment.PatientId equals UserInfoProvider.UserId
+                                   join UserInfoProvider in healthcare4AllDbContext.UserInfos on Appointment.CreatorId equals UserInfoProvider.UserId
                                    where Appointment.PatientId == UserId
                                    select new ApiAppointment {
                                        AppointmentId = Appointment.AppointmentId,
