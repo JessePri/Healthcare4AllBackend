@@ -21,6 +21,12 @@ namespace HealthCare4All.Classes.Users
             return patientUserIdQuery.ToList();
         }
 
+        /**
+         * @brief This will return the whole ApiAppointment object which will then be serialized to JSON as shown in the Swagger web page
+         *      when this is run in debug mode. 
+         * @param[input] string This is the user name of the patient that has appointments with the doctor.
+         * @return A list of fully filled out ApiAppointment objects. 
+         */
         public List<ApiAppointment> GetAppointments(string userName) {
             var appointmentQuery = from Appointment in healthcare4AllDbContext.Appointments
                                    join UserInfoPatient in healthcare4AllDbContext.UserInfos on Appointment.PatientId equals UserInfoPatient.UserId
@@ -47,6 +53,11 @@ namespace HealthCare4All.Classes.Users
             return appointments;
         }
 
+        /**
+         * @brief This will add an appointment with the doctor and another user.
+         * @param[input] apiAppointment The only fields that matter are the location and time related ones and the userName section. 
+         *      All other fields will be ignored.
+         */
         public void AddAppointment(ApiAppointment apiAppointment) {
             List<int> patientUserIds = GetPatientUserIdListFromUserName(apiAppointment.PatientUserName);
 
@@ -71,6 +82,11 @@ namespace HealthCare4All.Classes.Users
             }
         }
 
+        /**
+         * @brief This will edit an appointment and functions effectively like a delete and then re-add. 
+         * @param[input] apiAppointment The only fields that matter are the location and time related ones and the userName section. 
+         *      All other fields will be ignored.
+         */
         public void EditAppointment(ApiAppointment apiAppointment) {
             Appointment? appointment = healthcare4AllDbContext.Appointments.Find(apiAppointment.AppointmentId);
 
@@ -93,6 +109,11 @@ namespace HealthCare4All.Classes.Users
             }
         }
 
+        /**
+         * @brief Removes an appointment according to the appointmentId int the apiAppointment field. Will only do so if the healthcare provider
+         *      has created this appointment in the first place.
+         * @param[input] apiAppointment The apiAppointment class that only needs the appointmentId field filled. 
+         */
         public void RemoveAppointment(ApiAppointment apiAppointment) {
             Appointment? appointment = healthcare4AllDbContext.Appointments.Find(apiAppointment.AppointmentId);
 
@@ -115,6 +136,11 @@ namespace HealthCare4All.Classes.Users
             }
         }
         
+        /**
+         * @brief This will get all treatments that are associated with the user and are created by the healthcare provider. 
+         * @param[input] userName The userName of the patient associated with the providers treatment.
+         * @return Returns all treatments that are associated with a health care provider and the user name entered.
+         */
         public List<ApiTreatment> GetTreatments(string userName) {
             var treatmentQuery = from Treatment in healthcare4AllDbContext.Treatments
                                  join UserInfoPatient in healthcare4AllDbContext.UserInfos on Treatment.PatientId equals UserInfoPatient.UserId
@@ -173,8 +199,10 @@ namespace HealthCare4All.Classes.Users
             return treatments;
         }
 
-    
-
+        /**
+         * @brief Adds a treatment to a user from a healthcare provider.
+         * @param[input] treatment ApiTreatment object where only the PatientUserName and all other treatment specific information matter.
+         */
         public void AddTreatment(ApiTreatment treatment) {
             List<int> patientUserIds = GetPatientUserIdListFromUserName(treatment.PatientUserName);
             Treatment dbTreatment;
@@ -211,6 +239,10 @@ namespace HealthCare4All.Classes.Users
             }
         }
 
+        /**
+         * @brief Edits a treatment to a user from a healthcare provider (works like a delete and re-add).
+         * @param[input] treatment ApiTreatment object where only the PatientUserName and all other treatment specific information matter.
+         */
         public void EditTreatment(ApiTreatment apiTreatment) {
             Treatment? treatment = healthcare4AllDbContext.Treatments.Find(apiTreatment.TreatmentId);
 
@@ -254,6 +286,10 @@ namespace HealthCare4All.Classes.Users
             }
         }
 
+        /**
+         * @brief Removes a treatment based on the TreatmentId part of the ApiTreatment object.
+         * @param[input] apiTreatment The treatment where only the TreatmentId field matters. 
+         */
         public void RemoveTreatment(ApiTreatment apiTreatment) {
             Treatment? treatment = healthcare4AllDbContext.Treatments.Find(apiTreatment.TreatmentId);
 
