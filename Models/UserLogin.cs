@@ -1,6 +1,9 @@
 ﻿using System.Runtime.ConstrainedExecution;
 
 namespace HealthCare4All.Models {
+    /**
+     * This will be passed to the server from the android application in order to get an authorization token.
+     */
     public class UserLogin {
         public const int USER_PRIVILEGE_LEVEL = 0b00000001;
         public const int HEALTHCARE_PROVIDER_PRIVILEGE_LEVEL = 0b00000010;

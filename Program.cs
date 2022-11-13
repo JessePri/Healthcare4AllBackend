@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using System.Net;
+using System.Runtime.CompilerServices;
 //using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -225,6 +226,28 @@ app.MapPost("/AddUser", (UserInfo newUserInfo, Healthcare4AllDbContext newHealth
     }
 
     return Results.Accepted();
+});
+
+app.MapPost("/Login", (UserLogin userLogin, Healthcare4AllDbContext newHealthcare4AllDbContext) => {
+    var loginQuery = from UserInfo in newHealthcare4AllDbContext.UserInfos
+                     where (UserInfo.UserName == userLogin.UserName
+                     && UserInfo.Password == userLogin.Password
+                     && UserInfo.MaxPriviledge >= userLogin.Privilege)
+                     select UserInfo;
+
+    int userCount = loginQuery.Count();
+
+    if (userCount == 1) {
+        return new AuthToken {
+            UserName = userLogin.UserName,
+            Privilege = userLogin.Privilege
+        };
+    } else {
+        return new AuthToken {
+            UserName = "",
+            Privilege = 0
+        };
+    }
 });
 
 
