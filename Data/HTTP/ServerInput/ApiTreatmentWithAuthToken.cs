@@ -2,6 +2,6 @@
 
 namespace HealthCare4All.Data.HTTP.ServerInput {
     public class ApiTreatmentWithAuthToken : ApiTreatment {
-        public AuthToken Token { get; set; }
+        public string EncodedJwt { get; set; } = "";
     }
 }

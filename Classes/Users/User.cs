@@ -5,7 +5,7 @@ using HealthCare4All.Models;
 namespace HealthCare4All.Classes.Users
 {
     public abstract class User {
-        protected string UserName { get; set; } = "";
+        public string UserName { get; protected set; } = "";
 
         public int UserId { get; protected set; } = int.MinValue;
 
@@ -25,9 +25,16 @@ namespace HealthCare4All.Classes.Users
             }
         }
 
+        /**
+         * @brief Used for the null user that can't do anything except get a profile that does not exist. 
+         */
         protected User() { }
 
         public ApiUserInfo GetProfile() {
+            if (this is NullUser) {
+                return new ApiUserInfo();
+            }
+
             var profileQuery = from UserInfo in healthcare4AllDbContext.UserInfos
                                where UserInfo.UserId == UserId
                                select new ApiUserInfo {
@@ -44,9 +51,12 @@ namespace HealthCare4All.Classes.Users
             } else {
                 return new ApiUserInfo();
             }
-        
+
         }
 
+        /**
+         *
+         */ 
         public void EditProfile() { }
     }
 }   

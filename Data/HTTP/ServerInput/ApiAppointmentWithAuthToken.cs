@@ -5,6 +5,6 @@ namespace HealthCare4All.Data.HTTP.ServerInput
 {
     public class ApiAppointmentWithAuthToken : ApiAppointment
     {
-        public AuthToken Token { get; set; }
+        public string EncodedJwt { get; set; } = "";
     }
 }

@@ -5,9 +5,16 @@ using HealthCare4All.Data.HTTP.ServerInput;
 using HealthCare4All.Models;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Writers;
+using Microsoft.VisualBasic;
+using System;
+using System.IdentityModel.Tokens.Jwt;
 using System.Net;
 using System.Runtime.CompilerServices;
+using System.Security.Claims;
+using System.Text;
 //using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -28,15 +35,55 @@ if (app.Environment.IsDevelopment()) {
 
 app.UseHttpsRedirection();
 
-app.MapPost("/GetProfile", (AuthToken token, Healthcare4AllDbContext newHealthcare4AllDbContext) => {
-    User user = UserFactory.Create(token, newHealthcare4AllDbContext);
+SecurityKey securityKey = new SymmetricSecurityKey(Encoding.Default.GetBytes("as4vvalvj0fsddfKEY*&^^&)-pa-alkamogusdjfjkf[+l234lsd;ss;ddkfhjkljhl;;;;;';"));
+JwtSecurityTokenHandler jwtSecurityTokenHandler = new JwtSecurityTokenHandler();
+
+TokenValidationParameters tokenValidationParameters = new TokenValidationParameters() {
+    ValidateIssuerSigningKey = true,
+    RequireSignedTokens = true,
+    IssuerSigningKey = securityKey,
+
+    ValidateIssuer = true,
+    ValidateAudience = false,
+    ValidIssuer = "Healthcare4All",
+    ValidateActor = false,
+};
+
+ClaimsPrincipal? GetClaimsPrincipleFromEncodedJwt(string encodedJwt) {
+    SecurityToken securityToken = new JwtSecurityToken();
+    try {
+        return jwtSecurityTokenHandler.ValidateToken(encodedJwt, tokenValidationParameters, out securityToken);
+    } catch (Exception e) {
+        System.Diagnostics.Debug.WriteLine(e);
+        return null;
+    }
+}
+
+
+ 
+
+app.MapPost("/GetProfile", (string encodedJwt, Healthcare4AllDbContext newHealthcare4AllDbContext) => {
+    ClaimsPrincipal? claimsPrincipal = GetClaimsPrincipleFromEncodedJwt(encodedJwt);
+
+    if (claimsPrincipal == null) {
+        return Results.BadRequest();
+    }
+
+    User user = UserFactory.Create(claimsPrincipal, newHealthcare4AllDbContext);
+
+    Console.WriteLine(user.UserName);
 
     return Results.Ok(user.GetProfile());
 });
 
-app.MapPost("/GetAllAppointments", (string? userName, AuthToken token, Healthcare4AllDbContext newHealthcare4AllDbContext) => {
-    User user = UserFactory.Create(token, newHealthcare4AllDbContext);
+app.MapPost("/GetAllAppointments", (string? userName, string encodedJwt, Healthcare4AllDbContext newHealthcare4AllDbContext) => {
+    ClaimsPrincipal? claimsPrincipal = GetClaimsPrincipleFromEncodedJwt(encodedJwt);
 
+    if (claimsPrincipal == null) {
+        return Results.BadRequest();
+    }
+
+    User user = UserFactory.Create(claimsPrincipal, newHealthcare4AllDbContext);
     Patient patient;
     HealthcareProvider provider;
 
@@ -60,10 +107,13 @@ app.MapPost("/GetAllAppointments", (string? userName, AuthToken token, Healthcar
 });
 
 app.MapPost("/AddAppointment", (ApiAppointmentWithAuthToken apiAppointmentWithAuthToken, Healthcare4AllDbContext newHealthcare4AllDbContext) => {
-    //AuthToken token = new AuthToken();
+    ClaimsPrincipal? claimsPrincipal = GetClaimsPrincipleFromEncodedJwt(apiAppointmentWithAuthToken.EncodedJwt);
 
-    User user = UserFactory.Create(apiAppointmentWithAuthToken.Token, newHealthcare4AllDbContext);
+    if (claimsPrincipal == null) {
+        return Results.BadRequest();
+    }
 
+    User user = UserFactory.Create(claimsPrincipal, newHealthcare4AllDbContext);
     Patient patient;
     HealthcareProvider provider;
 
@@ -76,17 +126,20 @@ app.MapPost("/AddAppointment", (ApiAppointmentWithAuthToken apiAppointmentWithAu
         provider = (HealthcareProvider)user;
         provider.AddAppointment(apiAppointmentWithAuthToken);
 
-        return Results.Accepted();
+        return Results.Ok();
     } else {
         return Results.BadRequest();
     }
 });
 
 app.MapPost("/EditAppointment", (ApiAppointmentWithAuthToken apiAppointmentWithAuthToken, Healthcare4AllDbContext newHealthcare4AllDbContext) => {
-    //AuthToken token = new AuthToken();
+    ClaimsPrincipal? claimsPrincipal = GetClaimsPrincipleFromEncodedJwt(apiAppointmentWithAuthToken.EncodedJwt);
 
-    User user = UserFactory.Create(apiAppointmentWithAuthToken.Token, newHealthcare4AllDbContext);
+    if (claimsPrincipal == null) {
+        return Results.BadRequest();
+    }
 
+    User user = UserFactory.Create(claimsPrincipal, newHealthcare4AllDbContext);
     Patient patient;
     HealthcareProvider provider;
 
@@ -99,17 +152,20 @@ app.MapPost("/EditAppointment", (ApiAppointmentWithAuthToken apiAppointmentWithA
         provider = (HealthcareProvider)user;
         provider.EditAppointment(apiAppointmentWithAuthToken);
 
-        return Results.Accepted();
+        return Results.Ok();
     } else {
         return Results.BadRequest();
     }
 });
 
 app.MapPost("/RemoveAppointment", (ApiAppointmentWithAuthToken apiAppointmentWithAuthToken, Healthcare4AllDbContext newHealthcare4AllDbContext) => {
-    //AuthToken token = new AuthToken();
+    ClaimsPrincipal? claimsPrincipal = GetClaimsPrincipleFromEncodedJwt(apiAppointmentWithAuthToken.EncodedJwt);
 
-    User user = UserFactory.Create(apiAppointmentWithAuthToken.Token, newHealthcare4AllDbContext);
+    if (claimsPrincipal == null) {
+        return Results.BadRequest();
+    }
 
+    User user = UserFactory.Create(claimsPrincipal, newHealthcare4AllDbContext);
     Patient patient;
     HealthcareProvider provider;
 
@@ -122,15 +178,20 @@ app.MapPost("/RemoveAppointment", (ApiAppointmentWithAuthToken apiAppointmentWit
         provider = (HealthcareProvider)user;
         provider.RemoveAppointment(apiAppointmentWithAuthToken);
 
-        return Results.Accepted();
+        return Results.Ok();
     } else {
         return Results.BadRequest();
     }
 });
 
-app.MapPost("/GetAllTreatments", (string? userName, AuthToken token, Healthcare4AllDbContext newHealthcare4AllDbContext) => {
-    User user = UserFactory.Create(token, newHealthcare4AllDbContext);
+app.MapPost("/GetAllTreatments", (string? userName, string encodedJwt, Healthcare4AllDbContext newHealthcare4AllDbContext) => {
+    ClaimsPrincipal? claimsPrincipal = GetClaimsPrincipleFromEncodedJwt(encodedJwt);
 
+    if (claimsPrincipal == null) {
+        return Results.BadRequest();
+    }
+
+    User user = UserFactory.Create(claimsPrincipal, newHealthcare4AllDbContext);
     Patient patient;
     HealthcareProvider provider;
 
@@ -153,8 +214,13 @@ app.MapPost("/GetAllTreatments", (string? userName, AuthToken token, Healthcare4
 });
 
 app.MapPost("/AddTreatment", (ApiTreatmentWithAuthToken apiTreatmentWithAuthToken, Healthcare4AllDbContext newHealthcare4AllDbContext) => {
-    User user = UserFactory.Create(apiTreatmentWithAuthToken.Token, newHealthcare4AllDbContext);
+    ClaimsPrincipal? claimsPrincipal = GetClaimsPrincipleFromEncodedJwt(apiTreatmentWithAuthToken.EncodedJwt);
 
+    if (claimsPrincipal == null) {
+        return Results.BadRequest();
+    }
+
+    User user = UserFactory.Create(claimsPrincipal, newHealthcare4AllDbContext);
     Patient patient;
     HealthcareProvider provider;
 
@@ -167,15 +233,20 @@ app.MapPost("/AddTreatment", (ApiTreatmentWithAuthToken apiTreatmentWithAuthToke
         provider = (HealthcareProvider)user;
         provider.AddTreatment(apiTreatmentWithAuthToken);
 
-        return Results.Accepted();
+        return Results.Ok();
     } else {
         return Results.BadRequest();
     }
 });
 
 app.MapPost("/EditTreatment", (ApiTreatmentWithAuthToken apiTreatmentWithAuthToken, Healthcare4AllDbContext newHealthcare4AllDbContext) => {
-    User user = UserFactory.Create(apiTreatmentWithAuthToken.Token, newHealthcare4AllDbContext);
+    ClaimsPrincipal? claimsPrincipal = GetClaimsPrincipleFromEncodedJwt(apiTreatmentWithAuthToken.EncodedJwt);
 
+    if (claimsPrincipal == null) {
+        return Results.BadRequest();
+    }
+
+    User user = UserFactory.Create(claimsPrincipal, newHealthcare4AllDbContext);
     Patient patient;
     HealthcareProvider provider;
 
@@ -188,15 +259,20 @@ app.MapPost("/EditTreatment", (ApiTreatmentWithAuthToken apiTreatmentWithAuthTok
         provider = (HealthcareProvider)user;
         provider.EditTreatment(apiTreatmentWithAuthToken);
 
-        return Results.Accepted();
+        return Results.Ok();
     } else {
         return Results.BadRequest();
     }
 });
 
 app.MapPost("/RemoveTreatment", (ApiTreatmentWithAuthToken apiTreatmentWithAuthToken, Healthcare4AllDbContext newHealthcare4AllDbContext) => {
-    User user = UserFactory.Create(apiTreatmentWithAuthToken.Token, newHealthcare4AllDbContext);
+    ClaimsPrincipal? claimsPrincipal = GetClaimsPrincipleFromEncodedJwt(apiTreatmentWithAuthToken.EncodedJwt);
 
+    if (claimsPrincipal == null) {
+        return Results.BadRequest();
+    }
+
+    User user = UserFactory.Create(claimsPrincipal, newHealthcare4AllDbContext);
     Patient patient;
     HealthcareProvider provider;
 
@@ -209,7 +285,7 @@ app.MapPost("/RemoveTreatment", (ApiTreatmentWithAuthToken apiTreatmentWithAuthT
         provider = (HealthcareProvider)user;
         provider.RemoveTreatment(apiTreatmentWithAuthToken);
 
-        return Results.Accepted();
+        return Results.Ok();
     } else {
         return Results.BadRequest();
     }
@@ -217,7 +293,6 @@ app.MapPost("/RemoveTreatment", (ApiTreatmentWithAuthToken apiTreatmentWithAuthT
 
 
 app.MapPost("/AddUser", (UserInfo newUserInfo, Healthcare4AllDbContext newHealthcare4AllDbContext) => {
-
     try {
         newHealthcare4AllDbContext.UserInfos.Add(newUserInfo);
         newHealthcare4AllDbContext.SaveChanges();
@@ -225,10 +300,15 @@ app.MapPost("/AddUser", (UserInfo newUserInfo, Healthcare4AllDbContext newHealth
         return Results.BadRequest();
     }
 
-    return Results.Accepted();
+    return Results.Ok();
 });
 
 app.MapPost("/Login", (UserLogin userLogin, Healthcare4AllDbContext newHealthcare4AllDbContext) => {
+    SecurityTokenDescriptor securityTokenDescriptor = new SecurityTokenDescriptor();
+    securityTokenDescriptor.SigningCredentials = new SigningCredentials(
+        securityKey,
+        Microsoft.IdentityModel.Tokens.SecurityAlgorithms.HmacSha256Signature);
+
     var loginQuery = from UserInfo in newHealthcare4AllDbContext.UserInfos
                      where (UserInfo.UserName == userLogin.UserName
                      && UserInfo.Password == userLogin.Password
@@ -237,16 +317,19 @@ app.MapPost("/Login", (UserLogin userLogin, Healthcare4AllDbContext newHealthcar
 
     int userCount = loginQuery.Count();
 
+    
+
+    jwtSecurityTokenHandler.CreateJwtSecurityToken(securityTokenDescriptor);
     if (userCount == 1) {
-        return new AuthToken {
-            UserName = userLogin.UserName,
-            Privilege = userLogin.Privilege
-        };
+        securityTokenDescriptor.Issuer = "HealthCare4All";
+        securityTokenDescriptor.Claims = new Dictionary<string, object>();
+        securityTokenDescriptor.Claims.Add("UserName", userLogin.UserName);
+        securityTokenDescriptor.Claims.Add("Privilege", userLogin.Privilege);
+        securityTokenDescriptor.Issuer = "Healthcare4All";
+        //return Results.Ok(jwtSecurityTokenHandler.CreateJwtSecurityToken(securityTokenDescriptor));
+        return Results.Ok(jwtSecurityTokenHandler.CreateEncodedJwt(securityTokenDescriptor));
     } else {
-        return new AuthToken {
-            UserName = "",
-            Privilege = 0
-        };
+        return Results.BadRequest();
     }
 });
 
