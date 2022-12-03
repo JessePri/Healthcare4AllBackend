@@ -90,10 +90,7 @@ namespace HealthCare4All.Classes.Users
         public void EditAppointment(ApiAppointment apiAppointment) {
             Appointment? appointment = healthcare4AllDbContext.Appointments.Find(apiAppointment.AppointmentId);
 
-            List<int> patientUserIds = GetPatientUserIdListFromUserName(apiAppointment.PatientUserName);
-
-            if (appointment != null && appointment.CreatorId == UserId && patientUserIds.Count == 1) {
-                appointment.PatientId = patientUserIds[0];
+            if (appointment != null && appointment.CreatorId == UserId) {
                 appointment.Time = apiAppointment.Time;
                 appointment.Street = apiAppointment.Street;
                 appointment.City = apiAppointment.City;
@@ -246,12 +243,10 @@ namespace HealthCare4All.Classes.Users
         public void EditTreatment(ApiTreatment apiTreatment) {
             Treatment? treatment = healthcare4AllDbContext.Treatments.Find(apiTreatment.TreatmentId);
 
-            List<int> patientUserIds = GetPatientUserIdListFromUserName(apiTreatment.PatientUserName);
             List<TreatmentTime> treatmentTimes;
             List<TreatmentTime> newTreatmentTimes = new List<TreatmentTime>();
 
-            if (treatment != null && treatment.CreatorId == UserId && patientUserIds.Count == 1) {
-                treatment.PatientId = patientUserIds[0];
+            if (treatment != null && treatment.CreatorId == UserId) {
                 treatment.Name = apiTreatment.Name;
                 treatment.Dose = apiTreatment.Dose;
                 treatment.Comments = apiTreatment.Comments;

@@ -83,6 +83,10 @@ app.MapPost("/GetAllAppointments", (string? userName, string encodedJwt, Healthc
         return Results.BadRequest();
     }
 
+    System.Diagnostics.Debug.WriteLine("##########################");
+    System.Diagnostics.Debug.WriteLine("HIT");
+    System.Diagnostics.Debug.WriteLine("##########################");
+
     User user = UserFactory.Create(claimsPrincipal, newHealthcare4AllDbContext);
     Patient patient;
     HealthcareProvider provider;
