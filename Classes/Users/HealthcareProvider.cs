@@ -77,7 +77,7 @@ namespace HealthCare4All.Classes.Users
                 try {
                     healthcare4AllDbContext.SaveChanges();
                 } catch (Exception e) {
-
+                    System.Diagnostics.Debug.WriteLine(e.ToString());
                 }
             }
         }

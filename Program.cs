@@ -33,7 +33,7 @@ if (app.Environment.IsDevelopment()) {
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 
 SecurityKey securityKey = new SymmetricSecurityKey(Encoding.Default.GetBytes("as4vvalvj0fsddfKEY*&^^&)-pa-alkamogusdjfjkf[+l234lsd;ss;ddkfhjkljhl;;;;;';"));
 JwtSecurityTokenHandler jwtSecurityTokenHandler = new JwtSecurityTokenHandler();
@@ -47,6 +47,7 @@ TokenValidationParameters tokenValidationParameters = new TokenValidationParamet
     ValidateAudience = false,
     ValidIssuer = "Healthcare4All",
     ValidateActor = false,
+    ValidateLifetime = false,
 };
 
 ClaimsPrincipal? GetClaimsPrincipleFromEncodedJwt(string encodedJwt) {
@@ -82,10 +83,6 @@ app.MapPost("/GetAllAppointments", (string? userName, string encodedJwt, Healthc
     if (claimsPrincipal == null) {
         return Results.BadRequest();
     }
-
-    System.Diagnostics.Debug.WriteLine("##########################");
-    System.Diagnostics.Debug.WriteLine("HIT");
-    System.Diagnostics.Debug.WriteLine("##########################");
 
     User user = UserFactory.Create(claimsPrincipal, newHealthcare4AllDbContext);
     Patient patient;
@@ -129,6 +126,8 @@ app.MapPost("/AddAppointment", (ApiAppointmentWithAuthToken apiAppointmentWithAu
     } else if (user is HealthcareProvider) {
         provider = (HealthcareProvider)user;
         provider.AddAppointment(apiAppointmentWithAuthToken);
+
+        System.Diagnostics.Debug.WriteLine("HP");
 
         return Results.Ok();
     } else {
@@ -320,8 +319,6 @@ app.MapPost("/Login", (UserLogin userLogin, Healthcare4AllDbContext newHealthcar
                      select UserInfo;
 
     int userCount = loginQuery.Count();
-
-    
 
     jwtSecurityTokenHandler.CreateJwtSecurityToken(securityTokenDescriptor);
     if (userCount == 1) {
